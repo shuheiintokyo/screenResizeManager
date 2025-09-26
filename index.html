@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Resolution Detector & Image Analyzer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        .info-box {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+        .value {
+            font-weight: bold;
+            color: #4CAF50;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .copy-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+        .error {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+        .advanced-info {
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        .advanced-info details {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .advanced-info summary {
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .device-guess {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        .image-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .image-preview {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .image-info {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        .image-name {
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 8px;
+        }
+        .clear-images {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 0.9em;
+            width: auto;
+        }
+        .upload-button {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            width: auto;
+            display: inline-block;
+            margin: 5px;
+        }
+        .export-button {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 0.9em;
+            width: auto;
+            display: inline-block;
+        }
+        .device-type {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        .device-iphone {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+        .device-ipad {
+            background: rgba(156, 39, 176, 0.3);
+            color: #9C27B0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Screen & Image Analyzer</h1>
+        
+        <div class="info-box">
+            <h3>📱 Screen Information</h3>
+            <div class="info-item">
+                <span>Screen Width:</span>
+                <span class="value" id="screenWidth">-</span>
+            </div>
+            <div class="info-item">
+                <span>Screen Height:</span>
+                <span class="value" id="screenHeight">-</span>
+            </div>
+            <div class="info-item">
+                <span>Available Width:</span>
+                <span class="value" id="availWidth">-</span>
+            </div>
+            <div class="info-item">
+                <span>Available Height:</span>
+                <span class="value" id="availHeight">-</span>
+            </div>
+            <div class="info-item">
+                <span>Device Pixel Ratio:</span>
+                <span class="value" id="pixelRatio">-</span>
+            </div>
+            <div class="info-item">
+                <span>Window Width:</span>
+                <span class="value" id="windowWidth">-</span>
+            </div>
+            <div class="info-item">
+                <span>Window Height:</span>
+                <span class="value" id="windowHeight">-</span>
+            </div>
+        </div>
+
+        <button onclick="detectResolution()">🔍 Detect Screen Resolution</button>
+        <button onclick="copyToClipboard()">📋 Copy All Info</button>
+
+        <div id="status" class="status" style="display: none;"></div>
+
+        <!-- Image Upload Section -->
+        <div class="info-box">
+            <h3>📷 Upload Images to Measure & Export</h3>
+            <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
+            <button class="upload-button" onclick="document.getElementById('imageUpload').click()">📁 Select Images</button>
+            <div id="imageResults" style="margin-top: 15px;"></div>
+            <div id="exportAllSection" style="margin-top: 15px; display: none;">
+                <button class="export-button" onclick="exportAllImages()">📦 Export All Processed Images</button>
+                <p style="font-size: 0.9em; margin: 10px 0;">
+                    📱 iPhone images: Resized to 1242×2688px with *_iphone suffix<br>
+                    📱 iPad images: Resized to 2064×2752px with *_ipad suffix
+                </p>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>📊 Summary for Sharing:</h3>
+            <div class="copy-area" id="summaryText">Click "Detect Screen Resolution" to generate summary</div>
+        </div>
+
+        <div id="deviceGuess" class="device-guess" style="display: none;">
+            <span id="deviceGuessText"></span>
+        </div>
+
+        <div class="advanced-info">
+            <details>
+                <summary>🔧 Advanced Technical Details</summary>
+                <div class="info-item">
+                    <span>Color Depth:</span>
+                    <span class="value" id="colorDepth">-</span>
+                </div>
+                <div class="info-item">
+                    <span>Pixel Depth:</span>
+                    <span class="value" id="pixelDepth">-</span>
+                </div>
+                <div class="info-item">
+                    <span>Orientation:</span>
+                    <span class="value" id="orientation">-</span>
+                </div>
+                <div class="info-item">
+                    <span>Touch Support:</span>
+                    <span class="value" id="touchSupport">-</span>
+                </div>
+            </details>
+            
+            <details>
+                <summary>📱 Device Information</summary>
+                <div class="copy-area" id="deviceInfo" style="font-size: 0.8em;">Device details will appear here</div>
+            </details>
+        </div>
+
+        <div class="info-box">
+            <h3>💡 How to Use:</h3>
+            <p>1. Click "Detect Screen Resolution" to get your device info</p>
+            <p>2. Upload your images to measure their dimensions</p>
+            <p>3. Copy the complete summary and share it</p>
+            <p>4. Perfect for analyzing screenshots and comparing with your device!</p>
+        </div>
+    </div>
+
+    <script>
+        function detectResolution() {
+            // Get screen dimensions
+            const screenWidth = screen.width;
+            const screenHeight = screen.height;
+            const availWidth = screen.availWidth;
+            const availHeight = screen.availHeight;
+            const pixelRatio = window.devicePixelRatio || 1;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            // Advanced info
+            const colorDepth = screen.colorDepth || screen.pixelDepth || 'Unknown';
+            const pixelDepth = screen.pixelDepth || 'Unknown';
+            const orientation = screen.orientation ? screen.orientation.angle + '°' : 'Unknown';
+            const touchSupport = 'ontouchstart' in window ? 'Yes' : 'No';
+
+            // Update basic display
+            document.getElementById('screenWidth').textContent = screenWidth + 'px';
+            document.getElementById('screenHeight').textContent = screenHeight + 'px';
+            document.getElementById('availWidth').textContent = availWidth + 'px';
+            document.getElementById('availHeight').textContent = availHeight + 'px';
+            document.getElementById('pixelRatio').textContent = pixelRatio + 'x';
+            document.getElementById('windowWidth').textContent = windowWidth + 'px';
+            document.getElementById('windowHeight').textContent = windowHeight + 'px';
+            
+            // Update advanced info
+            document.getElementById('colorDepth').textContent = colorDepth + ' bit';
+            document.getElementById('pixelDepth').textContent = pixelDepth + ' bit';
+            document.getElementById('orientation').textContent = orientation;
+            document.getElementById('touchSupport').textContent = touchSupport;
+
+            // Device detection and guess
+            const deviceGuess = getDetailedDeviceInfo();
+            document.getElementById('deviceGuessText').textContent = deviceGuess.name;
+            document.getElementById('deviceGuess').style.display = 'block';
+
+            // Generate comprehensive summary
+            const summary = `📱 SCREEN RESOLUTION REPORT
+=================================
+Device: ${deviceGuess.name}
+Screen Size: ${screenWidth} × ${screenHeight} pixels
+Physical Resolution: ${Math.round(screenWidth * pixelRatio)} × ${Math.round(screenHeight * pixelRatio)} pixels
+Device Pixel Ratio: ${pixelRatio}x
+Available Screen: ${availWidth} × ${availHeight} pixels
+Window Size: ${windowWidth} × ${windowHeight} pixels
+
+Technical Details:
+• Color Depth: ${colorDepth} bit
+• Touch Support: ${touchSupport}
+• Orientation: ${orientation}
+• User Agent: ${navigator.userAgent}
+
+Screenshot Analysis:
+${deviceGuess.analysis}`;
+
+            document.getElementById('summaryText').textContent = summary;
+
+            // Update device info section
+            document.getElementById('deviceInfo').textContent = `Platform: ${navigator.platform}
+User Agent: ${navigator.userAgent}
+Language: ${navigator.language}
+Online: ${navigator.onLine ? 'Yes' : 'No'}
+Cookies: ${navigator.cookieEnabled ? 'Enabled' : 'Disabled'}`;
+
+            // Show success status
+            showStatus('✅ Complete screen analysis finished!', 'success');
+        }
+
+        function getDetailedDeviceInfo() {
+            const ua = navigator.userAgent;
+            const screenW = screen.width;
+            const screenH = screen.height;
+            const ratio = window.devicePixelRatio || 1;
+            
+            // iPhone detection with specific models
+            if (/iPhone/.test(ua)) {
+                const physicalW = Math.round(screenW * ratio);
+                const physicalH = Math.round(screenH * ratio);
+                
+                if (physicalW === 1290 && physicalH === 2796) {
+                    return {
+                        name: '📱 iPhone 15 Pro Max / 14 Pro Max',
+                        analysis: 'Screenshots from this device will be 1290×2796 pixels'
+                    };
+                }
+                if (physicalW === 1179 && physicalH === 2556) {
+                    return {
+                        name: '📱 iPhone 15 / 15 Pro',
+                        analysis: 'Screenshots from this device will be 1179×2556 pixels'
+                    };
+                }
+                if (physicalW === 1170 && physicalH === 2532) {
+                    return {
+                        name: '📱 iPhone 14 / 13 / 12 Series',
+                        analysis: 'Screenshots from this device will be 1170×2532 pixels'
+                    };
+                }
+                if (physicalW === 1284 && physicalH === 2778) {
+                    return {
+                        name: '📱 iPhone 13 Pro Max / 12 Pro Max',
+                        analysis: 'Screenshots from this device will be 1284×2778 pixels'
+                    };
+                }
+                if (physicalW === 828 && physicalH === 1792) {
+                    return {
+                        name: '📱 iPhone XR / 11',
+                        analysis: 'Screenshots from this device will be 828×1792 pixels'
+                    };
+                }
+                return {
+                    name: `📱 iPhone (${physicalW}×${physicalH})`,
+                    analysis: `Screenshots will be ${physicalW}×${physicalH} pixels`
+                };
+            }
+            
+            // iPad detection
+            if (/iPad/.test(ua)) {
+                const physicalW = Math.round(screenW * ratio);
+                const physicalH = Math.round(screenH * ratio);
+                return {
+                    name: `📱 iPad (${physicalW}×${physicalH})`,
+                    analysis: `Screenshots will be ${physicalW}×${physicalH} pixels`
+                };
+            }
+            
+            // Android detection
+            if (/Android/.test(ua)) {
+                const physicalW = Math.round(screenW * ratio);
+                const physicalH = Math.round(screenH * ratio);
+                return {
+                    name: `🤖 Android Device (${physicalW}×${physicalH})`,
+                    analysis: `Screenshots will be ${physicalW}×${physicalH} pixels`
+                };
+            }
+            
+            // Fallback
+            const physicalW = Math.round(screenW * ratio);
+            const physicalH = Math.round(screenH * ratio);
+            return {
+                name: `💻 Unknown Device (${physicalW}×${physicalH})`,
+                analysis: `Screenshots will likely be ${physicalW}×${physicalH} pixels`
+            };
+        }
+
+        function copyToClipboard() {
+            const summaryText = document.getElementById('summaryText').textContent;
+            
+            if (summaryText === "Click \"Detect Screen Resolution\" to generate summary") {
+                showStatus('❗ Please detect resolution first!', 'error');
+                return;
+            }
+
+            // Try to copy to clipboard
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(summaryText).then(() => {
+                    showStatus('📋 Copied to clipboard!', 'success');
+                }).catch(err => {
+                    fallbackCopy(summaryText);
+                });
+            } else {
+                fallbackCopy(summaryText);
+            }
+        }
+
+        function fallbackCopy(text) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showStatus('📋 Copied to clipboard!', 'success');
+            } catch (err) {
+                showStatus('❗ Copy failed. Please copy manually from the text area above.', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+
+        // Auto-detect on page load
+        window.addEventListener('load', function() {
+            setTimeout(detectResolution, 500);
+        });
+
+        // Update on orientation change
+        window.addEventListener('orientationchange', function() {
+            setTimeout(detectResolution, 500);
+        });
+
+        // Image upload handling
+        document.getElementById('imageUpload').addEventListener('change', function(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+
+            const resultsContainer = document.getElementById('imageResults');
+            
+            // Clear previous results or add to existing
+            if (resultsContainer.children.length === 0) {
+                resultsContainer.innerHTML = '<h4>📊 Image Analysis & Processing:</h4>';
+            }
+
+            // Store processed images for batch export
+            window.processedImages = window.processedImages || [];
+
+            Array.from(files).forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    measureAndProcessImage(file, resultsContainer);
+                }
+            });
+
+            // Add control buttons if not present
+            if (!resultsContainer.querySelector('.clear-images')) {
+                const clearButton = document.createElement('button');
+                clearButton.className = 'clear-images';
+                clearButton.textContent = '🗑️ Clear All Images';
+                clearButton.onclick = clearImages;
+                resultsContainer.appendChild(clearButton);
+            }
+
+            // Show export all section
+            document.getElementById('exportAllSection').style.display = 'block';
+        });
+
+        function detectDeviceType(width, height) {
+            // Device detection based on image dimensions
+            const maxDimension = Math.max(width, height);
+            const minDimension = Math.min(width, height);
+            const aspectRatio = maxDimension / minDimension;
+
+            // iPad detection - larger dimensions and different aspect ratio
+            if (maxDimension > 2000 || (maxDimension > 1800 && aspectRatio < 2.2)) {
+                return {
+                    type: 'ipad',
+                    targetWidth: 2064,
+                    targetHeight: 2752,
+                    suffix: '_ipad'
+                };
+            } else {
+                // iPhone detection - smaller dimensions, taller aspect ratio
+                return {
+                    type: 'iphone',
+                    targetWidth: 1242,
+                    targetHeight: 2688,
+                    suffix: '_iphone'
+                };
+            }
+        }
+
+        function measureAndProcessImage(file, container) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const img = new Image();
+                
+                img.onload = function() {
+                    // Detect device type and target dimensions
+                    const deviceInfo = detectDeviceType(img.width, img.height);
+                    
+                    // Create image display element
+                    const imageItem = document.createElement('div');
+                    imageItem.className = 'image-item';
+
+                    // Calculate file size
+                    let fileSize = (file.size / 1024).toFixed(1) + ' KB';
+                    if (file.size > 1024 * 1024) {
+                        fileSize = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+                    }
+
+                    // Get current screen info for comparison
+                    const screenW = screen.width;
+                    const screenH = screen.height;
+                    const ratio = window.devicePixelRatio || 1;
+                    const physicalScreenW = Math.round(screenW * ratio);
+                    const physicalScreenH = Math.round(screenH * ratio);
+
+                    // Determine if this looks like a screenshot
+                    const isScreenshot = (img.width === physicalScreenW && img.height === physicalScreenH) ||
+                                       (img.width === screenW && img.height === screenH) ||
+                                       (img.height > img.width && img.height > 1000);
+
+                    imageItem.innerHTML = `
+                        <div class="image-name">📷 ${file.name}</div>
+                        <div class="device-type device-${deviceInfo.type}">
+                            ${deviceInfo.type.toUpperCase()} DEVICE DETECTED
+                        </div>
+                        <img src="${e.target.result}" alt="${file.name}" class="image-preview">
+                        <div class="image-info">
+                            <strong>Original:</strong> ${img.width} × ${img.height} pixels<br>
+                            <strong>Target Size:</strong> ${deviceInfo.targetWidth} × ${deviceInfo.targetHeight} pixels<br>
+                            <strong>Device Type:</strong> ${deviceInfo.type.charAt(0).toUpperCase() + deviceInfo.type.slice(1)}<br>
+                            <strong>Export Name:</strong> ${getBaseName(file.name)}${deviceInfo.suffix}.${getExtension(file.name)}<br>
+                            <strong>File Size:</strong> ${fileSize}<br>
+                            <strong>File Type:</strong> ${file.type}<br>
+                            ${isScreenshot ? '<strong style="color: #4CAF50;">📱 Likely Screenshot!</strong>' : '<strong style="color: #FF9800;">📸 Regular Image</strong>'}
+                        </div>
+                        <button class="export-button" onclick="exportSingleImage('${file.name}', ${img.width}, ${img.height}, '${e.target.result}', '${deviceInfo.type}', ${deviceInfo.targetWidth}, ${deviceInfo.targetHeight}, '${deviceInfo.suffix}')">
+                            📤 Export This Image
+                        </button>
+                    `;
+
+                    container.appendChild(imageItem);
+                    
+                    // Store image data for batch processing
+                    window.processedImages = window.processedImages || [];
+                    window.processedImages.push({
+                        name: file.name,
+                        width: img.width,
+                        height: img.height,
+                        dataUrl: e.target.result,
+                        deviceType: deviceInfo.type,
+                        targetWidth: deviceInfo.targetWidth,
+                        targetHeight: deviceInfo.targetHeight,
+                        suffix: deviceInfo.suffix
+                    });
+                    
+                    // Update the summary with image info
+                    updateSummaryWithImages();
+                };
+
+                img.src = e.target.result;
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function getBaseName(filename) {
+            return filename.substring(0, filename.lastIndexOf('.')) || filename;
+        }
+
+        function getExtension(filename) {
+            return filename.substring(filename.lastIndexOf('.') + 1) || 'jpg';
+        }
+
+        function resizeImage(imageDataUrl, targetWidth, targetHeight) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = function() {
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+                    
+                    // Draw resized image
+                    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+                    
+                    // Convert to blob
+                    canvas.toBlob((blob) => {
+                        resolve(blob);
+                    }, 'image/jpeg', 0.9);
+                };
+                
+                img.src = imageDataUrl;
+            });
+        }
+
+        async function exportSingleImage(originalName, width, height, dataUrl, deviceType, targetWidth, targetHeight, suffix) {
+            try {
+                showStatus('🔄 Processing image...', 'success');
+                
+                const resizedBlob = await resizeImage(dataUrl, targetWidth, targetHeight);
+                const newFileName = getBaseName(originalName) + suffix + '.jpg';
+                
+                // Create download link
+                const url = URL.createObjectURL(resizedBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = newFileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showStatus(`✅ Exported: ${newFileName} (${targetWidth}×${targetHeight})`, 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showStatus('❌ Export failed!', 'error');
+            }
+        }
+
+        async function exportAllImages() {
+            if (!window.processedImages || window.processedImages.length === 0) {
+                showStatus('❗ No images to export!', 'error');
+                return;
+            }
+
+            showStatus('🔄 Processing all images...', 'success');
+            let exportCount = 0;
+
+            for (const imageData of window.processedImages) {
+                try {
+                    const resizedBlob = await resizeImage(
+                        imageData.dataUrl, 
+                        imageData.targetWidth, 
+                        imageData.targetHeight
+                    );
+                    
+                    const newFileName = getBaseName(imageData.name) + imageData.suffix + '.jpg';
+                    
+                    // Create download link
+                    const url = URL.createObjectURL(resizedBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = newFileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    exportCount++;
+                    
+                    // Small delay between downloads
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (error) {
+                    console.error('Export error for', imageData.name, error);
+                }
+            }
+
+            showStatus(`✅ Exported ${exportCount} images successfully!`, 'success');
+        }
+
+        function clearImages() {
+            document.getElementById('imageResults').innerHTML = '';
+            document.getElementById('imageUpload').value = '';
+            updateSummaryWithImages();
+            showStatus('🗑️ All images cleared!', 'success');
+        }
+
+        function updateSummaryWithImages() {
+            const imageItems = document.querySelectorAll('.image-item');
+            const summaryText = document.getElementById('summaryText');
+            
+            if (imageItems.length === 0) return;
+
+            let imagesSummary = '\n\n📷 UPLOADED IMAGES ANALYSIS:\n';
+            imageItems.forEach((item, index) => {
+                const name = item.querySelector('.image-name').textContent.replace('📷 ', '');
+                const info = item.querySelector('.image-info').textContent;
+                const dimensions = info.match(/Dimensions: (\d+ × \d+)/)[1];
+                const isScreenshot = info.includes('Likely Screenshot');
+                
+                imagesSummary += `${index + 1}. ${name}: ${dimensions} ${isScreenshot ? '(Screenshot)' : '(Image)'}\n`;
+            });
+
+            // Update summary if it exists
+            const currentSummary = summaryText.textContent;
+            if (currentSummary !== "Click \"Detect Screen Resolution\" to generate summary") {
+                const baseSummary = currentSummary.split('\n\n📷 UPLOADED IMAGES ANALYSIS:')[0];
+                summaryText.textContent = baseSummary + imagesSummary;
+            }
+        }
+    </script>
+</body>
+</html>
