@@ -520,13 +520,54 @@ Cookies: ${navigator.cookieEnabled ? 'Enabled' : 'Disabled'}`;
         });
 
         function detectDeviceType(width, height) {
-            // Device detection based on image dimensions
+            // Explicit dimension detection for your specific sizes
+            
+            // iPhone detection - explicitly check for 1206x2622
+            if ((width === 1206 && height === 2622) || (width === 2622 && height === 1206)) {
+                return {
+                    type: 'iphone',
+                    targetWidth: 1242,
+                    targetHeight: 2688,
+                    suffix: '_iphone'
+                };
+            }
+            
+            // iPad detection - explicitly check for 2048x2732  
+            if ((width === 2048 && height === 2732) || (width === 2732 && height === 2048)) {
+                return {
+                    type: 'ipad',
+                    targetWidth: 2064,
+                    targetHeight: 2752,
+                    suffix: '_ipad'
+                };
+            }
+            
+            // Fallback logic for similar sizes (with tolerance)
             const maxDimension = Math.max(width, height);
             const minDimension = Math.min(width, height);
-            const aspectRatio = maxDimension / minDimension;
-
-            // iPad detection - larger dimensions and different aspect ratio
-            if (maxDimension > 2000 || (maxDimension > 1800 && aspectRatio < 2.2)) {
+            
+            // iPhone-like dimensions (around 1200x2600 range)
+            if (maxDimension >= 2500 && maxDimension <= 2700 && minDimension >= 1100 && minDimension <= 1300) {
+                return {
+                    type: 'iphone',
+                    targetWidth: 1242,
+                    targetHeight: 2688,
+                    suffix: '_iphone'
+                };
+            }
+            
+            // iPad-like dimensions (around 2000x2700+ range)
+            if (maxDimension >= 2700 && minDimension >= 1900) {
+                return {
+                    type: 'ipad',
+                    targetWidth: 2064,
+                    targetHeight: 2752,
+                    suffix: '_ipad'
+                };
+            }
+            
+            // Default fallback - if dimensions don't match, guess based on size
+            if (maxDimension > 2700) {
                 return {
                     type: 'ipad',
                     targetWidth: 2064,
@@ -534,7 +575,6 @@ Cookies: ${navigator.cookieEnabled ? 'Enabled' : 'Disabled'}`;
                     suffix: '_ipad'
                 };
             } else {
-                // iPhone detection - smaller dimensions, taller aspect ratio
                 return {
                     type: 'iphone',
                     targetWidth: 1242,
@@ -720,6 +760,8 @@ Cookies: ${navigator.cookieEnabled ? 'Enabled' : 'Disabled'}`;
         function clearImages() {
             document.getElementById('imageResults').innerHTML = '';
             document.getElementById('imageUpload').value = '';
+            document.getElementById('exportAllSection').style.display = 'none';
+            window.processedImages = [];
             updateSummaryWithImages();
             showStatus('🗑️ All images cleared!', 'success');
         }
@@ -734,10 +776,19 @@ Cookies: ${navigator.cookieEnabled ? 'Enabled' : 'Disabled'}`;
             imageItems.forEach((item, index) => {
                 const name = item.querySelector('.image-name').textContent.replace('📷 ', '');
                 const info = item.querySelector('.image-info').textContent;
-                const dimensions = info.match(/Dimensions: (\d+ × \d+)/)[1];
-                const isScreenshot = info.includes('Likely Screenshot');
+                const originalMatch = info.match(/Original: (\d+ × \d+)/);
+                const targetMatch = info.match(/Target Size: (\d+ × \d+)/);
+                const deviceMatch = info.match(/Device Type: (\w+)/);
+                const exportMatch = info.match(/Export Name: (.+)/);
                 
-                imagesSummary += `${index + 1}. ${name}: ${dimensions} ${isScreenshot ? '(Screenshot)' : '(Image)'}\n`;
+                if (originalMatch && targetMatch && deviceMatch && exportMatch) {
+                    const original = originalMatch[1];
+                    const target = targetMatch[1];
+                    const device = deviceMatch[1];
+                    const exportName = exportMatch[1];
+                    
+                    imagesSummary += `${index + 1}. ${name}: ${original} → ${target} (${device}) → ${exportName}\n`;
+                }
             });
 
             // Update summary if it exists
