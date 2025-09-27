@@ -1,3 +1,5 @@
+Memo
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -186,41 +188,6 @@
 <body>
     <div class="container">
         <h1>📱 Screen & Image Analyzer</h1>
-        
-        <div class="info-box">
-            <h3>📱 Screen Information</h3>
-            <div class="info-item">
-                <span>Screen Width:</span>
-                <span class="value" id="screenWidth">-</span>
-            </div>
-            <div class="info-item">
-                <span>Screen Height:</span>
-                <span class="value" id="screenHeight">-</span>
-            </div>
-            <div class="info-item">
-                <span>Available Width:</span>
-                <span class="value" id="availWidth">-</span>
-            </div>
-            <div class="info-item">
-                <span>Available Height:</span>
-                <span class="value" id="availHeight">-</span>
-            </div>
-            <div class="info-item">
-                <span>Device Pixel Ratio:</span>
-                <span class="value" id="pixelRatio">-</span>
-            </div>
-            <div class="info-item">
-                <span>Window Width:</span>
-                <span class="value" id="windowWidth">-</span>
-            </div>
-            <div class="info-item">
-                <span>Window Height:</span>
-                <span class="value" id="windowHeight">-</span>
-            </div>
-        </div>
-
-        <button onclick="detectResolution()">🔍 Detect Screen Resolution</button>
-        <button onclick="copyToClipboard()">📋 Copy All Info</button>
 
         <div id="status" class="status" style="display: none;"></div>
 
@@ -324,18 +291,7 @@
             // Generate comprehensive summary
             const summary = `📱 SCREEN RESOLUTION REPORT
 =================================
-Device: ${deviceGuess.name}
 Screen Size: ${screenWidth} × ${screenHeight} pixels
-Physical Resolution: ${Math.round(screenWidth * pixelRatio)} × ${Math.round(screenHeight * pixelRatio)} pixels
-Device Pixel Ratio: ${pixelRatio}x
-Available Screen: ${availWidth} × ${availHeight} pixels
-Window Size: ${windowWidth} × ${windowHeight} pixels
-
-Technical Details:
-• Color Depth: ${colorDepth} bit
-• Touch Support: ${touchSupport}
-• Orientation: ${orientation}
-• User Agent: ${navigator.userAgent}
 
 Screenshot Analysis:
 ${deviceGuess.analysis}`;
